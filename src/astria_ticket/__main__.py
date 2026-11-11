@@ -7,7 +7,7 @@ from astria_ticket.settings import Settings
 
 
 def main() -> None:
-    settings = Settings()
+    settings = Settings()  # pyright: ignore[reportCallIssue]  # field wajib diisi dari env ASTRIA_*
     run(build_app(settings), settings)
 
 
