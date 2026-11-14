@@ -14,6 +14,7 @@ from importlib import resources
 from typing import Any
 
 import pytest
+from astria_common.consumer import PermanentError
 from astria_common.db import Database
 from astria_common.events import decode, encode, new_event
 from astria_common.outbox import outbox
@@ -94,6 +95,14 @@ def test_ringkas_menolak(kode: dict[str, Any]) -> None:
         ringkas(kode)
 
 
+def test_kartu_tidak_valid_adalah_galat_permanen() -> None:
+    """Consumer langsung mengirim event ke DLQ (common#9), tanpa backoff; tetap ValueError untuk kode lain."""
+    assert issubclass(KartuTidakValid, PermanentError)
+    assert issubclass(KartuTidakValid, ValueError)
+    with pytest.raises(PermanentError):
+        ringkas({"judul": "J", "band": "kritis", "skor": 1})
+
+
 def test_contoh_kontrak_bisa_diringkas() -> None:
     contoh = _contoh()
     env, model = decode(json.dumps(contoh).encode())
@@ -106,7 +115,7 @@ def test_contoh_kontrak_bisa_diringkas() -> None:
 async def test_correlation_beda_ditolak() -> None:
     env, model = _event(_data())
     env = env.model_copy(update={"correlation": env.correlation.model_copy(update={"version": 9})})
-    with pytest.raises(KartuTidakValid):
+    with pytest.raises(PermanentError):
         await PenerimaKartu(jam=lambda: T0).on_card_verified(None, env, model)  # pyright: ignore[reportArgumentType]
 
 
