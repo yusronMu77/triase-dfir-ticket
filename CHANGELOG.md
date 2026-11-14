@@ -11,7 +11,8 @@
 
 ### Changed
 
-- `astria-common` v0.2.2 dan `astria-contracts` v0.3.0.
+- `astria-common` v0.3.1 (naik dari v0.2.2) dan `astria-contracts` v0.4.0 (naik dari v0.3.0; common v0.3.1 mengunci v0.4.0).
+- `KartuTidakValid` turunan `astria_common.consumer.PermanentError` (common#9): kartu dengan isi tidak valid (band, skor, judul, pola, correlation) langsung masuk DLQ `astria.dlq.<konsumen>`, tidak lagi dicoba ulang sampai `max_deliver` (sekitar 2,5 menit). Galat database tetap sementara dan dicoba ulang.
 
 ### Added (Tahap 0)
 

@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from astria_common.audit_client import audit_event
+from astria_common.consumer import PermanentError
 from astria_common.log import get_logger
 from astria_common.outbox import enqueue
 from astria_contracts import Envelope
@@ -35,8 +36,12 @@ AKTOR_LAYANAN = "svc:ticket"
 MAKS_JUDUL = 300
 
 
-class KartuTidakValid(ValueError):
-    """Galat data (permanen): isi `card.verified` tidak bisa dijadikan tiket."""
+class KartuTidakValid(PermanentError, ValueError):
+    """Galat data (permanen): isi `card.verified` tidak bisa dijadikan tiket.
+
+    Turunan `PermanentError`: `Consumer` menerbitkannya ke DLQ saat itu juga, tanpa mengulang event yang isinya sama.
+    Hanya galat data yang deterministik yang memakainya; galat database tetap sementara dan dicoba ulang.
+    """
 
 
 @dataclass(frozen=True, slots=True)
